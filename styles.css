@@ -1,0 +1,329 @@
+/* ============================================================
+   HorizonMines — cinematic title screen
+   Palette + type are drawn from the night scene in the background:
+   deep sky, emerald glow of the ore build, warm lantern light.
+   ============================================================ */
+
+/* Minecraft display font — public domain, by JDGraphics, self-hosted.
+   Source: https://www.fontspace.com/minecraft-font-f28180 */
+@font-face {
+  font-family: 'Minecraft';
+  src: url('fonts/Minecraft-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Minecraft';
+  src: url('fonts/Minecraft-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --night: #080b0a;
+  --emerald: #1bad46;          /* original brand hover green, kept exact */
+  --emerald-glow: #46e874;
+  --amber: #f0a655;            /* lantern warmth */
+  --text: #f1f5f0;
+  --muted: rgba(241, 245, 240, 0.56);
+  --faint: rgba(241, 245, 240, 0.30);
+
+  --display: 'Minecraft', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Lucida Console', monospace;
+
+  --edge: clamp(1.5rem, 7vw, 8rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  color: var(--text);
+  font-family: var(--display);
+  background: var(--night);
+  overflow-x: hidden;
+}
+
+/* Full-bleed background scene (unchanged image) ------------- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: url('images/background.png') center / cover no-repeat;
+}
+
+/* Edgeless scrim — no box, just light shaping so type reads.
+   Darker at the left where the content lives, and along the
+   very bottom for the disclaimer; the right stays open sky. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(100deg, rgba(6, 9, 8, 0.90) 0%, rgba(6, 9, 8, 0.55) 34%, rgba(6, 9, 8, 0.05) 66%, transparent 100%),
+    linear-gradient(to bottom, rgba(6, 9, 8, 0.35) 0%, transparent 22%, transparent 68%, rgba(6, 9, 8, 0.75) 100%);
+}
+
+/* Stage / layout ------------------------------------------- */
+.stage {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(3rem, 8vh, 6rem) var(--edge);
+}
+
+.content {
+  width: 100%;
+  max-width: 40rem;
+}
+
+/* Staged entrance — quiet, one orchestrated moment ---------- */
+.wordmark,
+.connect,
+.links {
+  animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.connect { animation-delay: 0.34s; }
+.links { animation-delay: 0.46s; }
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Wordmark — the poster ------------------------------------ */
+.wordmark {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 12vw, 8rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+/* Connect — copyable addresses, no boxes ------------------- */
+.connect {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 6rem 1fr auto;
+  align-items: baseline;
+  column-gap: 1.5rem;
+  width: 100%;
+  padding: 1.05rem 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row + .row {
+  border-top: 1px solid rgba(241, 245, 240, 0.09);
+}
+
+.plat {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding-top: 0.35rem;
+}
+
+.addr {
+  min-width: 0;
+}
+
+.ad {
+  display: inline;
+  font-family: var(--mono);
+  font-size: clamp(1.05rem, 2.6vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text);
+  word-break: break-word;
+  background-image: linear-gradient(var(--emerald), var(--emerald));
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+}
+
+.hint {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(241, 245, 240, 0.75);
+  padding-top: 0.4rem;
+  transition: color 0.25s ease;
+  white-space: nowrap;
+}
+
+/* Hover / focus reveal — underline draws under the address */
+.row:hover .ad,
+.row:focus-visible .ad {
+  color: var(--emerald);
+  background-size: 100% 1.5px;
+}
+
+.row:hover .hint,
+.row:focus-visible .hint {
+  color: var(--emerald);
+}
+
+.row:focus-visible {
+  outline: none;
+}
+
+.row:focus-visible .ad {
+  outline: 2px solid rgba(27, 173, 70, 0.6);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.row.copied .ad {
+  color: var(--emerald);
+  background-size: 100% 1.5px;
+}
+
+.row.copied .hint {
+  color: var(--emerald-glow);
+}
+
+/* Community links — text only, expressive hover ------------ */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1.5rem, 4vw, 2.75rem);
+  margin-top: clamp(2.25rem, 5vh, 3.25rem);
+}
+
+.links a {
+  position: relative;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-decoration: none;
+  padding-bottom: 0.3rem;
+  transition: color 0.25s ease;
+}
+
+.links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1.5px;
+  width: 0;
+  background: var(--emerald);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.links a:hover,
+.links a:focus-visible {
+  color: var(--emerald);
+  outline: none;
+}
+
+.links a:hover::after,
+.links a:focus-visible::after {
+  width: 100%;
+}
+
+/* Disclaimer — deliberately quiet, pinned low -------------- */
+.disclaimer {
+  position: absolute;
+  left: var(--edge);
+  bottom: clamp(1.5rem, 4vh, 2.5rem);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Small screens -------------------------------------------- */
+@media (max-width: 560px) {
+  .stage {
+    justify-content: flex-end;
+    padding-bottom: clamp(5rem, 16vh, 8rem);
+  }
+
+  .row {
+    grid-template-columns: 1fr auto;
+    column-gap: 1rem;
+    row-gap: 0.15rem;
+  }
+
+  .plat {
+    grid-column: 1 / -1;
+    padding-top: 0;
+    padding-bottom: 0.35rem;
+  }
+
+  .hint {
+    align-self: center;
+    padding-top: 0;
+  }
+}
+
+/* Respect reduced motion ----------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .kicker,
+  .wordmark,
+  .horizon,
+  .connect,
+  .links {
+    animation: none;
+  }
+
+  .ad,
+  .links a::after,
+  .hint {
+    transition: none;
+  }
+}
