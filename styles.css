@@ -151,13 +151,13 @@ body::after {
 
 /* Block icon: grass for Java, bedrock for Bedrock. Pixel art, so it
    is drawn at a whole multiple of its 16px grid and never smoothed. */
-/* 64px is 1:1 with the SVG's 64-unit grid, so every texture pixel lands on a
-   whole screen pixel. 48px would put the geometry on 0.75px steps and the
-   edges would wobble; 32px (1:2) is the only other clean size. */
+/* Block renders, 300px source shown at 64px. Deliberately NOT
+   image-rendering: pixelated -- that is nearest-neighbour, which is right
+   when you scale pixel art up but aliases badly on the way down. The
+   browser's smooth filter is what we want at this size. */
 .block {
   width: 4rem;
   height: 4rem;
-  image-rendering: pixelated;
 }
 
 .plat {
