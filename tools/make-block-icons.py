@@ -69,34 +69,56 @@ def tint(tex, k):
             for row in tex]
 
 
-def smooth_field(seed, passes=2):
-    """Random field softened by neighbourhood averaging.
+def value_noise(seed, cells):
+    """Smooth noise from a cells x cells lattice, sampled up to 16x16.
 
-    Straight per-pixel noise gives speckle; averaging a few times pulls it
-    into organic patches, which is what a real block texture looks like.
-    Wraps at the edges, since block textures tile.
+    Wraps, since block textures tile.
     """
     rnd = random.Random(seed)
-    f = [[rnd.random() for _ in range(N)] for _ in range(N)]
-    for _ in range(passes):
-        g = [[0.0] * N for _ in range(N)]
+    g = [[rnd.random() for _ in range(cells)] for _ in range(cells)]
+    out = [[0.0] * N for _ in range(N)]
+    for y in range(N):
+        for x in range(N):
+            fx, fy = x / N * cells, y / N * cells
+            x0, y0 = int(fx), int(fy)
+            x1, y1 = (x0 + 1) % cells, (y0 + 1) % cells
+            tx, ty = fx - x0, fy - y0
+            sx, ty_ = tx * tx * (3 - 2 * tx), ty * ty * (3 - 2 * ty)
+            a = g[y0][x0] + (g[y0][x1] - g[y0][x0]) * sx
+            b = g[y1][x0] + (g[y1][x1] - g[y1][x0]) * sx
+            out[y][x] = a + (b - a) * ty_
+    return out
+
+
+def fractal(seed, octaves, contrast=1.0):
+    """Sum several octaves of value noise.
+
+    This is the piece that was missing. A single octave of per-pixel noise
+    is television static, and averaging it flat is fog; natural-looking
+    rock and soil need large shapes carrying medium ones carrying fine
+    detail. Weights are per texture: bedrock leans on the fine octaves for
+    its blotching, grass and dirt on the broad ones.
+    """
+    acc = [[0.0] * N for _ in range(N)]
+    for i, (cells, w) in enumerate(octaves):
+        f = value_noise(seed + i * 13, cells)
         for y in range(N):
             for x in range(N):
-                acc = [f[(y + dy) % N][(x + dx) % N]
-                       for dy in (-1, 0, 1) for dx in (-1, 0, 1)]
-                g[y][x] = sum(acc) / 9.0
-        f = g
-    lo, hi = min(map(min, f)), max(map(max, f))
+                acc[y][x] += f[y][x] * w
+    lo = min(map(min, acc))
+    hi = max(map(max, acc))
     rng = (hi - lo) or 1.0
-    return [[(v - lo) / rng for v in row] for row in f]
+    for y in range(N):
+        for x in range(N):
+            v = (acc[y][x] - lo) / rng
+            v = (v - 0.5) * contrast + 0.5
+            acc[y][x] = min(1.0, max(0.0, v))
+    return acc
 
 
-def ramp(field, tones, gamma=1.0):
-    out = []
-    for row in field:
-        out.append([tones[min(len(tones) - 1, int((v ** gamma) * len(tones)))]
-                    for v in row])
-    return out
+def ramp(field, tones):
+    return [[tones[min(len(tones) - 1, int(v * len(tones)))] for v in row]
+            for row in field]
 
 
 def hexrgb(s):
@@ -104,35 +126,20 @@ def hexrgb(s):
 
 
 def fallback_bedrock():
-    """Bedrock wants the opposite of smoothing.
-
-    Averaging pulls grass and dirt into pleasant patches, but it turns
-    bedrock straight back into smooth grey stone. What makes bedrock read
-    is high-contrast blotching, so the tone distribution here is bimodal
-    -- plenty of near-black and light grey, little middle -- and some
-    pixels sample a 2x2 cell so the mottling clumps instead of speckling.
-    """
+    # Weighted toward the fine octaves and pushed hard on contrast: bedrock
+    # reads as tight high-contrast blotching, not broad cloudy shading.
     tones = [hexrgb(c) for c in
-             ('#3d3d3d', '#585858', '#727272', '#8e8e8e', '#aaaaaa')]
-    cuts = [34, 47, 60, 73]
-    rnd = random.Random(17)
-    fine = [[rnd.randrange(100) for _ in range(N)] for _ in range(N)]
-    coarse = [[rnd.randrange(100) for _ in range(N)] for _ in range(N)]
-    pickc = [[rnd.randrange(100) for _ in range(N)] for _ in range(N)]
-    rows = []
-    for y in range(N):
-        row = []
-        for x in range(N):
-            v = coarse[y // 2][x // 2] if pickc[y][x] < 45 else fine[y][x]
-            row.append(tones[sum(1 for c in cuts if v >= c)])
-        rows.append(row)
-    return rows
+             ('#3a3a3a', '#565656', '#727272', '#909090', '#adadad')]
+    return ramp(fractal(17, ((2, 0.30), (4, 0.28), (8, 0.26), (16, 0.16)),
+                        contrast=1.9), tones)
 
 
 def fallback_grass_top():
+    # Broad octaves dominate: grass is mostly even, with gentle patchiness.
     tones = [hexrgb(c) for c in
              ('#5d9a3f', '#6aa94a', '#77b755', '#84c560', '#91d16b')]
-    return ramp(smooth_field(3, passes=2), tones)
+    return ramp(fractal(3, ((2, 0.45), (4, 0.30), (8, 0.18), (16, 0.07)),
+                        contrast=1.15), tones)
 
 
 def fallback_grass_side():
@@ -140,7 +147,8 @@ def fallback_grass_side():
             ('#5c4028', '#6b4b30', '#795538', '#876040', '#956b48')]
     grass = [hexrgb(c) for c in
              ('#4a7d33', '#558c3a', '#609a42', '#6ba84a', '#76b552')]
-    f = smooth_field(7, passes=2)
+    f = fractal(7, ((2, 0.40), (4, 0.30), (8, 0.20), (16, 0.10)),
+                contrast=1.25)
     rnd = random.Random(99)
     depth = [3 + rnd.randrange(3) for _ in range(N)]     # ragged overhang
     rows = []
