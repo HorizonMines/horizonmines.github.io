@@ -1,5 +1,5 @@
-// Click a server address to copy it. No boxes to click — the whole
-// row is the target, and the "copy" hint confirms the action in place.
+// Click a server address row to copy it. The hint in the row swaps to
+// "copied" for a moment, and the same message goes to a live region.
 
 (function () {
   'use strict';
