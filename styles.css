@@ -30,7 +30,6 @@
   --faint: rgba(241, 245, 240, 0.30);
 
   --display: 'Minecraft', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', 'Lucida Console', monospace;
 
   --edge: clamp(1.5rem, 7vw, 8rem);
 }
@@ -90,7 +89,7 @@ body::after {
 
 .content {
   width: 100%;
-  max-width: 50rem;
+  max-width: 46rem;
 }
 
 /* Entrance */
@@ -174,7 +173,7 @@ body::after {
   display: inline;
   font-family: var(--display);
   font-size: 20px;
-  font-size: round(down, clamp(20px, 3.2vw, 30px), 10px);
+  font-size: round(down, clamp(20px, 3.9vw, 30px), 10px);
   line-height: 1.25;
   color: var(--text);
   word-break: break-word;
@@ -265,10 +264,9 @@ body::after {
   position: absolute;
   left: var(--edge);
   bottom: clamp(1.5rem, 4vh, 2.5rem);
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.05em;
-  line-height: 1.5;
+  font-family: var(--display);
+  font-size: 10px;              /* one CSS px per font pixel: native size */
+  line-height: 1.6;
   color: var(--faint);
 }
 
@@ -314,7 +312,7 @@ body::after {
   /* Below ~370px the 20px step no longer fits, and phones are all 2x+
      displays, so scale smoothly here rather than dropping to 10px. */
   .ad {
-    font-size: clamp(0.8rem, 4.4vw, 20px);
+    font-size: clamp(1rem, 5.2vw, 20px);
   }
 }
 
