@@ -90,7 +90,7 @@ body::after {
 
 .content {
   width: 100%;
-  max-width: 48rem;
+  max-width: 50rem;
 }
 
 /* Entrance */
@@ -131,7 +131,7 @@ body::after {
 
 .row {
   display: grid;
-  grid-template-columns: 3rem 6rem 1fr auto;
+  grid-template-columns: 4rem 5.5rem 1fr auto;
   align-items: center;
   column-gap: 1rem;
   width: 100%;
@@ -151,9 +151,12 @@ body::after {
 
 /* Block icon: grass for Java, bedrock for Bedrock. Pixel art, so it
    is drawn at a whole multiple of its 16px grid and never smoothed. */
+/* 64px is 1:1 with the SVG's 64-unit grid, so every texture pixel lands on a
+   whole screen pixel. 48px would put the geometry on 0.75px steps and the
+   edges would wobble; 32px (1:2) is the only other clean size. */
 .block {
-  width: 3rem;
-  height: 3rem;
+  width: 4rem;
+  height: 4rem;
   image-rendering: pixelated;
 }
 
@@ -171,7 +174,7 @@ body::after {
   display: inline;
   font-family: var(--display);
   font-size: 20px;
-  font-size: round(down, clamp(20px, 3.4vw, 30px), 10px);
+  font-size: round(down, clamp(20px, 3.2vw, 30px), 10px);
   line-height: 1.25;
   color: var(--text);
   word-break: break-word;
@@ -287,7 +290,7 @@ body::after {
   }
 
   .row {
-    grid-template-columns: 3rem 1fr auto;
+    grid-template-columns: 4rem 1fr auto;
     column-gap: 0.85rem;
     row-gap: 0.4rem;
   }
