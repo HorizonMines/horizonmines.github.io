@@ -270,6 +270,53 @@ body::after {
   color: var(--faint);
 }
 
+/* Server status: sits opposite the disclaimer, same size and baseline */
+.server-status {
+  position: absolute;
+  right: var(--edge);
+  bottom: clamp(1.5rem, 4vh, 2.5rem);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--display);
+  font-size: 12px;              /* off the 10px grid: a touch soft on 1x screens */
+  line-height: 1.6;
+  color: rgba(241, 245, 240, 0.42);   /* between --faint and --muted */
+}
+
+/* A blocky "bubble": an 8px square with its corners notched out,
+   drawn with hard-edged shadows so it reads as pixel art. */
+.bubble {
+  --bubble: #7a7f7b;
+  --bubble-dark: #4a4e4b;
+  width: 6px;
+  height: 6px;
+  margin: 2px;
+  background: var(--bubble);
+  box-shadow:
+    -2px 0 0 0 var(--bubble-dark),
+    2px 0 0 0 var(--bubble-dark),
+    0 -2px 0 0 var(--bubble-dark),
+    0 2px 0 0 var(--bubble-dark),
+    inset -2px -2px 0 0 var(--bubble-dark);
+}
+
+.server-status[data-state="online"] .bubble {
+  --bubble: #55ff55;           /* Minecraft chat green */
+  --bubble-dark: #1f8f2f;
+}
+
+.server-status[data-state="offline"] .bubble {
+  --bubble: #ff5555;           /* Minecraft chat red */
+  --bubble-dark: #9c2323;
+}
+
+/* Hidden until the status service answers, and whenever it can't be reached */
+.server-status[hidden] {
+  display: none;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -313,6 +360,13 @@ body::after {
      displays, so scale smoothly here rather than dropping to 10px. */
   .ad {
     font-size: clamp(1rem, 5.2vw, 20px);
+  }
+
+  /* No room side by side with the disclaimer: stack above it. */
+  .server-status {
+    left: var(--edge);
+    right: auto;
+    bottom: calc(clamp(1.5rem, 4vh, 2.5rem) + 20px);   /* clear the disclaimer line */
   }
 }
 
